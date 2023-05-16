@@ -5,12 +5,13 @@
 #include <stack.h>
 
 int main(void) {
-	stack_t * stack = stack_new(TYPE_U64, 20);
+	stack_t * stack = stack_new(TYPE_U64, 0);
 	if (stack == NULL) {
 		printf("malloc error\n");
 		return -1;
 	}
 
+	printf("empty\n");
 	stack_print(stack);
 
 	size_t last = 0;
