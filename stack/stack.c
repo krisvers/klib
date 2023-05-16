@@ -32,6 +32,8 @@ stack_t * stack_new(type_t type, size_t max) {
 
 void stack_push(stack_t * stack, value_t value) {
 	if (stack->size == stack->max) {
+		printf("stack (%s): %p is already full!\n", type_names[stack->type], (void *) stack);
+
 		return;
 	}
 
@@ -56,9 +58,13 @@ void stack_push(stack_t * stack, value_t value) {
 value_t stack_pop(stack_t * stack) {
 	value_t value;
 	
-	if (--stack->size <= 0) {
+	if (stack->size == 0 || stack->size - 1 > stack->max) {
+		printf("stack (%s): %p is already empty!\n", type_names[stack->type], (void *) stack);
+
 		return -1;
 	}
+
+	--stack->size;
 
 	DO_FOR_EACH_TYPE(stack->type, \
 		value = (value_t) (arithptr_t) NULL, \
@@ -110,4 +116,20 @@ void stack_clear(stack_t * stack) {
 			((ptr_t *) stack->array)[stack->size] = NULL \
 		);
 	}
+}
+
+void stack_print(stack_t * stack) {
+	value_t i = 0;
+	ptr_t ptr = stack->array;
+
+	printf("stack (%s): %p: [ ", type_names[stack->type], (void *) stack);
+
+	for (; i < stack->size; i++) {
+		printf(type_printf_formatter[stack->type], type_ptr_dereference(stack->type, ptr));
+		printf(", ");
+
+		ptr = type_ptr_value_add(ptr, type_sizeof(stack->type));
+	}
+
+	puts("]");
 }

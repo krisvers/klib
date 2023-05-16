@@ -4,6 +4,32 @@
 #include <stdint.h>
 #include <stddef.h>
 
+char * type_printf_formatter[10] = {
+	"\0",
+	"%u",
+	"%u",
+	"%u",
+	"%llu",
+	"%i",
+	"%i",
+	"%i",
+	"%lli",
+	"%p",
+};
+
+char * type_names[10] = {
+	"void",
+	"u8",
+	"u16",
+	"u32",
+	"u64",
+	"i8",
+	"i16",
+	"i32",
+	"i64",
+	"ptr",
+};
+
 size_t type_sizeof(type_t type) {
 	switch (type) {
 		case TYPE_VOID:	return 0;
@@ -22,7 +48,7 @@ size_t type_sizeof(type_t type) {
 	return 0;
 }
 
-value_t type_value_ptr(type_t type, ptr_t ptr) {
+value_t type_ptr_dereference(type_t type, ptr_t ptr) {
 	DO_FOR_EACH_TYPE(type, \
 		return (value_t) (uintptr_t) NULL, \
 		return (value_t) *((uint8_t *) ptr), \
@@ -45,23 +71,4 @@ ptr_t type_ptr_value_add(ptr_t ptr, value_t value) {
 
 ptr_t type_ptr_value_sub(ptr_t ptr, value_t value) {
 	return (ptr_t) (arithptr_t) (((arithptr_t) ptr) - value);
-}
-
-char * type_printf_formatter(type_t type) {
-	char * str = malloc(5);
-
-	DO_FOR_EACH_TYPE(type, \
-		return strcpy(str, "\0"), \
-		return strcpy(str, "%u"), \
-		return strcpy(str, "%u"), \
-		return strcpy(str, "%u"), \
-		return strcpy(str, "%llu"), \
-		return strcpy(str, "%i"), \
-		return strcpy(str, "%i"), \
-		return strcpy(str, "%i"), \
-		return strcpy(str, "%lli"), \
-		return strcpy(str, "%p") \
-	);
-
-	return str;
 }

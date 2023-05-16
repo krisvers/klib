@@ -30,10 +30,12 @@ typedef enum {
 	TYPE_PTR = 9
 } type_t;
 
+char * type_printf_formatter[10];
+char * type_names[10];
+
 size_t type_sizeof(type_t type);
-value_t type_value_ptr(type_t type, ptr_t ptr);
+value_t type_ptr_dereference(type_t type, ptr_t ptr);
 ptr_t type_ptr_value_add(ptr_t ptr, value_t value);
 ptr_t type_ptr_value_sub(ptr_t ptr, value_t value);
-char * type_printf_formatter(type_t type);
 
 #endif

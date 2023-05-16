@@ -4,30 +4,28 @@
 #include <type.h>
 #include <stack.h>
 
-void print(stack_t * stack) {
-	value_t i = 0;
-	ptr_t ptr = stack->array;
-
-	for (; i < stack->size; i++) {
-		printf(strcat("%llu: ", strcat(type_printf_formatter(stack->type), "\n")), type_value_ptr(stack->type, ptr));
-
-		ptr = type_ptr_value_add(ptr, type_sizeof(stack->type));
-	}
-}
-
 int main(void) {
-	stack_t * stack = stack_new(TYPE_I32, 20);
+	stack_t * stack = stack_new(TYPE_U64, 20);
+	if (stack == NULL) {
+		printf("malloc error\n");
+		return -1;
+	}
 
-	stack_push(stack, 69);
-	stack_push(stack, 420);
-	print(stack);
-	printf("%llu\n", stack_pop(stack));
-	stack_push(stack, -239);
-	print(stack);
-	stack_clear(stack);
-	print(stack);
+	size_t last = 0;
+	size_t tmp = last;
+	for (size_t i = 1; i < 70000;) {
+		stack_push(stack, i);
+		stack_print(stack);
+		tmp = last;
+		last = i;
+		i += tmp;
+	}
+
+	for (; stack->size;) {
+		stack_pop(stack);
+		stack_print(stack);
+	}
 
 	free(stack);
-
 	return 0;
 }
