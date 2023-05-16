@@ -32,7 +32,7 @@ stack_t * stack_new(type_t type, size_t max) {
 
 void stack_push(stack_t * stack, value_t value) {
 	if (stack->size == stack->max) {
-		printf("stack (%s): %p is already full!\n", type_names[stack->type], (void *) stack);
+		printf("warning: stack (%s): %p is already full!\n", type_names[stack->type], (void *) stack);
 
 		return;
 	}
@@ -59,7 +59,7 @@ value_t stack_pop(stack_t * stack) {
 	value_t value;
 	
 	if (stack->size == 0 || stack->size - 1 > stack->max) {
-		printf("stack (%s): %p is already empty!\n", type_names[stack->type], (void *) stack);
+		printf("warning: stack (%s): %p is already empty!\n", type_names[stack->type], (void *) stack);
 
 		return -1;
 	}
@@ -121,6 +121,12 @@ void stack_clear(stack_t * stack) {
 void stack_print(stack_t * stack) {
 	value_t i = 0;
 	ptr_t ptr = stack->array;
+
+	if (stack->size == 0 || stack->size > stack->max) {
+		printf("stack (%s): %p: [ EMPTY ]\n", type_names[stack->type], (void *) stack);
+
+		return;
+	}
 
 	printf("stack (%s): %p: [ ", type_names[stack->type], (void *) stack);
 

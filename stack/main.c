@@ -11,6 +11,8 @@ int main(void) {
 		return -1;
 	}
 
+	stack_print(stack);
+
 	size_t last = 0;
 	size_t tmp = last;
 	for (size_t i = 1; i < 70000;) {
