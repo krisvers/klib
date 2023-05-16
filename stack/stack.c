@@ -76,7 +76,7 @@ void stack_push(stack_t * stack, value_t value) {
 value_t stack_pop(stack_t * stack) {
 	value_t value;
 	
-	if (stack->size == stack->max) {
+	if (stack->size == 0) {
 		printf("warning: stack (%s): %p is already empty!\n", type_names[stack->type], (void *) stack);
 
 		return -1;

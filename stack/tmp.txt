@@ -1,0 +1,369 @@
+I made a stack "container" in C, which uses a run-time type system (for poor man's reflection).
+types.c
+```c
+#include <type.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#include <stddef.h>
+
+char * type_printf_formatter[10] = {
+	"\0",
+	"%u",
+	"%u",
+	"%u",
+	"%llu",
+	"%i",
+	"%i",
+	"%i",
+	"%lli",
+	"%p",
+};
+
+char * type_names[10] = {
+	"void",
+	"u8",
+	"u16",
+	"u32",
+	"u64",
+	"i8",
+	"i16",
+	"i32",
+	"i64",
+	"ptr",
+};
+
+size_t type_sizeof(type_t type) {
+	switch (type) {
+		case TYPE_VOID:	return 0;
+		case TYPE_U8:
+		case TYPE_I8:	return sizeof(uint8_t);
+		case TYPE_U16:
+		case TYPE_I16:	return sizeof(uint16_t);
+		case TYPE_U32:
+		case TYPE_I32:	return sizeof(uint32_t);
+		case TYPE_U64:
+		case TYPE_I64:	return sizeof(uint64_t);
+		case TYPE_PTR:	return sizeof(ptr_t);
+		default: return 0;
+	}
+
+	return 0;
+}
+
+value_t type_ptr_dereference(type_t type, ptr_t ptr) {
+	DO_FOR_EACH_TYPE(type, \
+		return (value_t) (uintptr_t) NULL, \
+		return (value_t) *((uint8_t *) ptr), \
+		return (value_t) *((uint16_t *) ptr), \
+		return (value_t) *((uint32_t *) ptr), \
+		return (value_t) *((uint64_t *) ptr), \
+		return (value_t) *((int8_t *) ptr), \
+		return (value_t) *((int16_t *) ptr), \
+		return (value_t) *((int32_t *) ptr), \
+		return (value_t) *((int64_t *) ptr), \
+		return (value_t) (uintptr_t) *((ptr_t *) ptr) \
+	);
+
+	return (value_t) (uintptr_t) NULL;
+}
+
+ptr_t type_ptr_value_add(ptr_t ptr, value_t value) {
+	return (ptr_t) (arithptr_t) (((arithptr_t) ptr) + value);
+}
+
+ptr_t type_ptr_value_sub(ptr_t ptr, value_t value) {
+	return (ptr_t) (arithptr_t) (((arithptr_t) ptr) - value);
+}
+```
+type.h
+```c
+#ifndef TYPE_H
+#define TYPE_H
+
+#include <stddef.h>
+#include <stdint.h>
+
+#define IF_TYPE(var, type, statement) if (var == type) { statement; }
+#define DO_FOR_EACH_TYPE(var, \
+	void_statement, \
+	u8_statement, u16_statement, u32_statement, \
+	u64_statement, i8_statement, i16_statement, \
+	i32_statement, i64_statement, ptr_statement \
+) \
+switch (var) { case TYPE_VOID: void_statement; break; case TYPE_U8: u8_statement; break; case TYPE_U16: u16_statement; break; case TYPE_U32: u32_statement; break; case TYPE_U64: u64_statement; break; case TYPE_I8: i8_statement; break; case TYPE_I16: i16_statement; break; case TYPE_I32: i32_statement; break; case TYPE_I64: i64_statement; break; case TYPE_PTR: ptr_statement; break; default: break; }
+
+typedef void * ptr_t;
+typedef unsigned long long value_t;
+typedef uintptr_t arithptr_t;
+
+typedef enum {
+	TYPE_VOID = 0,
+	TYPE_U8 = 1,
+	TYPE_U16 = 2,
+	TYPE_U32 = 3,
+	TYPE_U64 = 4,
+	TYPE_I8 = 5,
+	TYPE_I16 = 6,
+	TYPE_I32 = 7,
+	TYPE_I64 = 8,
+	TYPE_PTR = 9
+} type_t;
+
+char * type_printf_formatter[10];
+char * type_names[10];
+
+size_t type_sizeof(type_t type);
+value_t type_ptr_dereference(type_t type, ptr_t ptr);
+ptr_t type_ptr_value_add(ptr_t ptr, value_t value);
+ptr_t type_ptr_value_sub(ptr_t ptr, value_t value);
+
+#endif
+```
+stack.c
+```c
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <type.h>
+#include <stack.h>
+
+stack_t * stack_new(type_t type, size_t max) {
+	stack_t * stack = malloc(sizeof(stack_t));
+	if (stack == NULL) {
+		return NULL;
+	}
+
+	stack->max = max;
+	stack->size = 0;
+	stack->type = type;
+	
+	if (max != 0) {
+		DO_FOR_EACH_TYPE(type, \
+			stack->array = NULL, \
+			stack->array = malloc(sizeof(uint8_t) * max), \
+			stack->array = malloc(sizeof(uint16_t) * max), \
+			stack->array = malloc(sizeof(uint32_t) * max), \
+			stack->array = malloc(sizeof(uint64_t) * max), \
+			stack->array = malloc(sizeof(int8_t) * max), \
+			stack->array = malloc(sizeof(int16_t) * max), \
+			stack->array = malloc(sizeof(int32_t) * max), \
+			stack->array = malloc(sizeof(int64_t) * max), \
+			stack->array = malloc(sizeof(ptr_t) * max) \
+		);
+	}
+
+	return stack;
+}
+
+void stack_push(stack_t * stack, value_t value) {
+	if (stack->max != 0 && stack->size >= stack->max) {
+		printf("warning: stack (%s): %p is already full!\n", type_names[stack->type], (void *) stack);
+
+		return;
+	}
+
+	if (stack->max == 0) {
+		DO_FOR_EACH_TYPE(stack->type, \
+			break, \
+			stack->array = realloc(stack->array, (((arithptr_t) stack->size) + 1) * sizeof(uint8_t)), \
+			stack->array = realloc(stack->array, (((arithptr_t) stack->size) + 1) * sizeof(uint16_t)), \
+			stack->array = realloc(stack->array, (((arithptr_t) stack->size) + 1) * sizeof(uint32_t)), \
+			stack->array = realloc(stack->array, (((arithptr_t) stack->size) + 1) * sizeof(uint64_t)), \
+			stack->array = realloc(stack->array, (((arithptr_t) stack->size) + 1) * sizeof(int8_t)), \
+			stack->array = realloc(stack->array, (((arithptr_t) stack->size) + 1) * sizeof(int16_t)), \
+			stack->array = realloc(stack->array, (((arithptr_t) stack->size) + 1) * sizeof(int32_t)), \
+			stack->array = realloc(stack->array, (((arithptr_t) stack->size) + 1) * sizeof(int64_t)), \
+			stack->array = realloc(stack->array, (((arithptr_t) stack->size) + 1) * sizeof(ptr_t)) \
+		);
+	}
+
+	DO_FOR_EACH_TYPE(stack->type, \
+		break, \
+		((uint8_t *) stack->array)[stack->size] = (uint8_t) value, \
+		((uint16_t *) stack->array)[stack->size] = (uint16_t) value, \
+		((uint32_t *) stack->array)[stack->size] = (uint32_t) value, \
+		((uint64_t *) stack->array)[stack->size] = (uint64_t) value, \
+		((int8_t *) stack->array)[stack->size] = (int8_t) value, \
+		((int16_t *) stack->array)[stack->size] = (int16_t) value, \
+		((int32_t *) stack->array)[stack->size] = (int32_t) value, \
+		((int64_t *) stack->array)[stack->size] = (int64_t) value, \
+		((ptr_t *) stack->array)[stack->size] = (ptr_t) (uintptr_t) value \
+	);
+
+	++stack->size;
+
+	return;
+}
+
+value_t stack_pop(stack_t * stack) {
+	value_t value;
+	
+	if (stack->size == stack->max) {
+		printf("warning: stack (%s): %p is already empty!\n", type_names[stack->type], (void *) stack);
+
+		return -1;
+	}
+
+	--stack->size;
+
+	DO_FOR_EACH_TYPE(stack->type, \
+		value = (value_t) (arithptr_t) NULL, \
+		value = (value_t) ((uint8_t *) stack->array)[stack->size], \
+		value = (value_t) ((uint16_t *) stack->array)[stack->size], \
+		value = (value_t) ((uint32_t *) stack->array)[stack->size], \
+		value = (value_t) ((uint64_t *) stack->array)[stack->size], \
+		value = (value_t) ((int8_t *) stack->array)[stack->size], \
+		value = (value_t) ((int16_t *) stack->array)[stack->size], \
+		value = (value_t) ((int32_t *) stack->array)[stack->size], \
+		value = (value_t) ((int64_t *) stack->array)[stack->size], \
+		value = (value_t) (arithptr_t) ((ptr_t *) stack->array)[stack->size] \
+	);
+
+	if (stack->max == 0) {
+		DO_FOR_EACH_TYPE(stack->type, \
+			break, \
+			stack->array = realloc(stack->array, ((arithptr_t) stack->size) * sizeof(uint8_t)), \
+			stack->array = realloc(stack->array, ((arithptr_t) stack->size) * sizeof(uint16_t)), \
+			stack->array = realloc(stack->array, ((arithptr_t) stack->size) * sizeof(uint32_t)), \
+			stack->array = realloc(stack->array, ((arithptr_t) stack->size) * sizeof(uint64_t)), \
+			stack->array = realloc(stack->array, ((arithptr_t) stack->size) * sizeof(int8_t)), \
+			stack->array = realloc(stack->array, ((arithptr_t) stack->size) * sizeof(int16_t)), \
+			stack->array = realloc(stack->array, ((arithptr_t) stack->size) * sizeof(int32_t)), \
+			stack->array = realloc(stack->array, ((arithptr_t) stack->size) * sizeof(int64_t)), \
+			stack->array = realloc(stack->array, ((arithptr_t) stack->size) * sizeof(ptr_t)) \
+		);
+	}
+
+	return value;
+}
+
+value_t stack_peek(stack_t * stack) {
+	value_t value;
+
+	DO_FOR_EACH_TYPE(stack->type, \
+		value = (value_t) (arithptr_t) NULL, \
+		value = (value_t) ((uint8_t *) stack->array)[stack->size - 1], \
+		value = (value_t) ((uint16_t *) stack->array)[stack->size - 1], \
+		value = (value_t) ((uint32_t *) stack->array)[stack->size - 1], \
+		value = (value_t) ((uint64_t *) stack->array)[stack->size - 1], \
+		value = (value_t) ((int8_t *) stack->array)[stack->size - 1], \
+		value = (value_t) ((int16_t *) stack->array)[stack->size - 1], \
+		value = (value_t) ((int32_t *) stack->array)[stack->size - 1], \
+		value = (value_t) ((int64_t *) stack->array)[stack->size - 1], \
+		value = (value_t) (arithptr_t) ((ptr_t *) stack->array)[stack->size - 1] \
+	);
+
+	return value;
+}
+
+void stack_clear(stack_t * stack) {
+	if (stack->max == 0) {
+		stack->array = realloc(stack->array, 0);
+		stack->size = 0;
+
+		return;
+	}
+
+	for (; --stack->size;) {
+		DO_FOR_EACH_TYPE(stack->type, \
+			;, \
+			((uint8_t *) stack->array)[stack->size] = 0, \
+			((uint16_t *) stack->array)[stack->size] = 0, \
+			((uint32_t *) stack->array)[stack->size] = 0, \
+			((uint64_t *) stack->array)[stack->size] = 0, \
+			((int8_t *) stack->array)[stack->size] = 0, \
+			((int16_t *) stack->array)[stack->size] = 0, \
+			((int32_t *) stack->array)[stack->size] = 0, \
+			((int64_t *) stack->array)[stack->size] = 0, \
+			((ptr_t *) stack->array)[stack->size] = NULL \
+		);
+	}
+}
+
+void stack_print(stack_t * stack) {
+	value_t i = 0;
+	ptr_t ptr = stack->array;
+
+	if (stack->size == 0 || (stack->size > stack->max && stack->max != 0)) {
+		printf("stack (%s): %p: [ EMPTY ]\n", type_names[stack->type], (void *) stack);
+
+		return;
+	}
+
+	printf("stack (%s): %p: [ ", type_names[stack->type], (void *) stack);
+
+	for (; i < stack->size; i++) {
+		printf(type_printf_formatter[stack->type], type_ptr_dereference(stack->type, ptr));
+		printf(", ");
+
+		ptr = type_ptr_value_add(ptr, type_sizeof(stack->type));
+	}
+
+	puts("]");
+}
+```
+stack.h
+```c
+#ifndef STACK_H
+#define STACK_H
+
+#include <stdint.h>
+#include <stddef.h>
+#include <type.h>
+
+typedef struct {
+	size_t size;
+	size_t max;
+	type_t type;
+	void * array;
+} stack_t;
+
+stack_t * stack_new(type_t type, size_t size);
+void stack_push(stack_t * stack, value_t value);
+value_t stack_pop(stack_t * stack);
+value_t stack_peek(stack_t * stack);
+void stack_clear(stack_t * stack);
+void stack_print(stack_t * stack);
+
+#endif
+```
+main.c
+```c
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <type.h>
+#include <stack.h>
+
+int main(void) {
+	stack_t * stack = stack_new(TYPE_U64, 0);
+	if (stack == NULL) {
+		printf("malloc error\n");
+		return -1;
+	}
+
+	printf("empty\n");
+	stack_print(stack);
+
+	size_t last = 0;
+	size_t tmp = last;
+	for (size_t i = 1; i < 70000;) {
+		stack_push(stack, i);
+		stack_print(stack);
+		tmp = last;
+		last = i;
+		i += tmp;
+	}
+
+	for (; stack->size;) {
+		stack_pop(stack);
+		stack_print(stack);
+	}
+
+	free(stack);
+	return 0;
+}
+```
+Compiled with `gcc [source files] [include dirs] -std=c99 -Wall -Werror -Wextra -Wpedantic`
