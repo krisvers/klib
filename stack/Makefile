@@ -1,5 +1,8 @@
 CC = gcc
-CCFLAGS = -I../include -std=c99 -Wall -Werror -Wextra
+CCFLAGS = -I../include -I./include -std=c99 -Wall -Werror -Wextra
+CFILES = $(shell find . -type f -name "*.c") ../type.c
+OUT = ../bin/stack
 
 all:
-	$(CC) ../type.c *.c -o stack $(CCFLAGS)
+	@echo "  - Building stack demo ($(CC) $(CFILES) -o $(OUT) $(CCFLAGS))"
+	@$(CC) $(CFILES) -o $(OUT) $(CCFLAGS)

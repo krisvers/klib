@@ -1,4 +1,6 @@
 #include "type.h"
+#include <stdlib.h>
+#include <string.h>
 #include <stdint.h>
 #include <stddef.h>
 
@@ -43,4 +45,23 @@ ptr_t type_ptr_value_add(ptr_t ptr, value_t value) {
 
 ptr_t type_ptr_value_sub(ptr_t ptr, value_t value) {
 	return (ptr_t) (arithptr_t) (((arithptr_t) ptr) - value);
+}
+
+char * type_printf_formatter(type_t type) {
+	char * str = malloc(5);
+
+	DO_FOR_EACH_TYPE(type, \
+		return strcpy(str, "\0"), \
+		return strcpy(str, "%u"), \
+		return strcpy(str, "%u"), \
+		return strcpy(str, "%u"), \
+		return strcpy(str, "%llu"), \
+		return strcpy(str, "%i"), \
+		return strcpy(str, "%i"), \
+		return strcpy(str, "%i"), \
+		return strcpy(str, "%lli"), \
+		return strcpy(str, "%p") \
+	);
+
+	return str;
 }
