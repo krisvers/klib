@@ -122,6 +122,11 @@ value_t stack_pop(stack_t * stack) {
 value_t stack_peek(stack_t * stack) {
 	value_t value;
 
+	if (stack->size == 0) {
+		fprintf(stderr, "error: stack cannot access top element, stack->size == 0 (%s): %p\n", type_get_name(stack->type), (void *) stack);
+		abort();
+	}
+
 	DO_FOR_EACH_TYPE(stack->type, \
 		value = (value_t) (arithptr_t) NULL, \
 		value = (value_t) ((uint8_t *) stack->array)[stack->size - 1], \
