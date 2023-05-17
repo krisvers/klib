@@ -14,8 +14,8 @@
 switch (var) { case TYPE_VOID: void_statement; break; case TYPE_U8: u8_statement; break; case TYPE_U16: u16_statement; break; case TYPE_U32: u32_statement; break; case TYPE_U64: u64_statement; break; case TYPE_I8: i8_statement; break; case TYPE_I16: i16_statement; break; case TYPE_I32: i32_statement; break; case TYPE_I64: i64_statement; break; case TYPE_PTR: ptr_statement; break; default: break; }
 
 typedef void * ptr_t;
-typedef unsigned long long value_t;
-typedef uintptr_t arithptr_t;
+typedef uintmax_t value_t;
+typedef char * arithptr_t;
 
 typedef enum {
 	TYPE_VOID = 0,
@@ -30,9 +30,8 @@ typedef enum {
 	TYPE_PTR = 9
 } type_t;
 
-char * type_printf_formatter[10];
-char * type_names[10];
-
+char * type_get_printf_formatter(type_t type);
+char * type_get_name(type_t type);
 size_t type_sizeof(type_t type);
 value_t type_ptr_dereference(type_t type, ptr_t ptr);
 ptr_t type_ptr_value_add(ptr_t ptr, value_t value);

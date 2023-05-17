@@ -35,7 +35,7 @@ stack_t * stack_new(type_t type, size_t max) {
 
 void stack_push(stack_t * stack, value_t value) {
 	if (stack->max != 0 && stack->size >= stack->max) {
-		printf("warning: stack (%s): %p is already full!\n", type_names[stack->type], (void *) stack);
+		printf("warning: stack (%s): %p is already full!\n", type_get_name(stack->type), (void *) stack);
 
 		return;
 	}
@@ -43,15 +43,15 @@ void stack_push(stack_t * stack, value_t value) {
 	if (stack->max == 0) {
 		DO_FOR_EACH_TYPE(stack->type, \
 			break, \
-			stack->array = realloc(stack->array, (((arithptr_t) stack->size) + 1) * sizeof(uint8_t)), \
-			stack->array = realloc(stack->array, (((arithptr_t) stack->size) + 1) * sizeof(uint16_t)), \
-			stack->array = realloc(stack->array, (((arithptr_t) stack->size) + 1) * sizeof(uint32_t)), \
-			stack->array = realloc(stack->array, (((arithptr_t) stack->size) + 1) * sizeof(uint64_t)), \
-			stack->array = realloc(stack->array, (((arithptr_t) stack->size) + 1) * sizeof(int8_t)), \
-			stack->array = realloc(stack->array, (((arithptr_t) stack->size) + 1) * sizeof(int16_t)), \
-			stack->array = realloc(stack->array, (((arithptr_t) stack->size) + 1) * sizeof(int32_t)), \
-			stack->array = realloc(stack->array, (((arithptr_t) stack->size) + 1) * sizeof(int64_t)), \
-			stack->array = realloc(stack->array, (((arithptr_t) stack->size) + 1) * sizeof(ptr_t)) \
+			stack->array = realloc(stack->array, (size_t) (((arithptr_t) stack->size) + 1) * sizeof(uint8_t)), \
+			stack->array = realloc(stack->array, (size_t) (((arithptr_t) stack->size) + 1) * sizeof(uint16_t)), \
+			stack->array = realloc(stack->array, (size_t) (((arithptr_t) stack->size) + 1) * sizeof(uint32_t)), \
+			stack->array = realloc(stack->array, (size_t) (((arithptr_t) stack->size) + 1) * sizeof(uint64_t)), \
+			stack->array = realloc(stack->array, (size_t) (((arithptr_t) stack->size) + 1) * sizeof(int8_t)), \
+			stack->array = realloc(stack->array, (size_t) (((arithptr_t) stack->size) + 1) * sizeof(int16_t)), \
+			stack->array = realloc(stack->array, (size_t) (((arithptr_t) stack->size) + 1) * sizeof(int32_t)), \
+			stack->array = realloc(stack->array, (size_t) (((arithptr_t) stack->size) + 1) * sizeof(int64_t)), \
+			stack->array = realloc(stack->array, (size_t) (((arithptr_t) stack->size) + 1) * sizeof(ptr_t)) \
 		);
 	}
 
@@ -77,7 +77,7 @@ value_t stack_pop(stack_t * stack) {
 	value_t value;
 	
 	if (stack->size == 0) {
-		printf("warning: stack (%s): %p is already empty!\n", type_names[stack->type], (void *) stack);
+		printf("warning: stack (%s): %p is already empty!\n", type_get_name(stack->type), (void *) stack);
 
 		return -1;
 	}
@@ -100,15 +100,15 @@ value_t stack_pop(stack_t * stack) {
 	if (stack->max == 0) {
 		DO_FOR_EACH_TYPE(stack->type, \
 			break, \
-			stack->array = realloc(stack->array, ((arithptr_t) stack->size) * sizeof(uint8_t)), \
-			stack->array = realloc(stack->array, ((arithptr_t) stack->size) * sizeof(uint16_t)), \
-			stack->array = realloc(stack->array, ((arithptr_t) stack->size) * sizeof(uint32_t)), \
-			stack->array = realloc(stack->array, ((arithptr_t) stack->size) * sizeof(uint64_t)), \
-			stack->array = realloc(stack->array, ((arithptr_t) stack->size) * sizeof(int8_t)), \
-			stack->array = realloc(stack->array, ((arithptr_t) stack->size) * sizeof(int16_t)), \
-			stack->array = realloc(stack->array, ((arithptr_t) stack->size) * sizeof(int32_t)), \
-			stack->array = realloc(stack->array, ((arithptr_t) stack->size) * sizeof(int64_t)), \
-			stack->array = realloc(stack->array, ((arithptr_t) stack->size) * sizeof(ptr_t)) \
+			stack->array = realloc(stack->array, (size_t) ((arithptr_t) stack->size) * sizeof(uint8_t)), \
+			stack->array = realloc(stack->array, (size_t) ((arithptr_t) stack->size) * sizeof(uint16_t)), \
+			stack->array = realloc(stack->array, (size_t) ((arithptr_t) stack->size) * sizeof(uint32_t)), \
+			stack->array = realloc(stack->array, (size_t) ((arithptr_t) stack->size) * sizeof(uint64_t)), \
+			stack->array = realloc(stack->array, (size_t) ((arithptr_t) stack->size) * sizeof(int8_t)), \
+			stack->array = realloc(stack->array, (size_t) ((arithptr_t) stack->size) * sizeof(int16_t)), \
+			stack->array = realloc(stack->array, (size_t) ((arithptr_t) stack->size) * sizeof(int32_t)), \
+			stack->array = realloc(stack->array, (size_t) ((arithptr_t) stack->size) * sizeof(int64_t)), \
+			stack->array = realloc(stack->array, (size_t) ((arithptr_t) stack->size) * sizeof(ptr_t)) \
 		);
 	}
 
@@ -163,17 +163,21 @@ void stack_print(stack_t * stack) {
 	ptr_t ptr = stack->array;
 
 	if (stack->size == 0 || (stack->size > stack->max && stack->max != 0)) {
-		printf("stack (%s): %p: [ EMPTY ]\n", type_names[stack->type], (void *) stack);
+		printf("stack (%s): %p: [ EMPTY ]\n", type_get_name(stack->type), (void *) stack);
 
 		return;
 	}
 
-	printf("stack (%s): %p: [ ", type_names[stack->type], (void *) stack);
+	printf("stack (%s): %p: [ ", type_get_name(stack->type), (void *) stack);
 
 	for (; i < stack->size; i++) {
-		printf(type_printf_formatter[stack->type], type_ptr_dereference(stack->type, ptr));
-		printf(", ");
+		if (stack->type == TYPE_PTR) {
+			printf("%p", *((void **) ptr));
+		} else {
+			printf(type_get_printf_formatter(stack->type), type_ptr_dereference(stack->type, ptr));
+		}
 
+		printf(", ");
 		ptr = type_ptr_value_add(ptr, type_sizeof(stack->type));
 	}
 

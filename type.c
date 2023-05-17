@@ -3,32 +3,41 @@
 #include <string.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <inttypes.h>
 
-char * type_printf_formatter[10] = {
-	"\0",
-	"%u",
-	"%u",
-	"%u",
-	"%llu",
-	"%i",
-	"%i",
-	"%i",
-	"%lli",
-	"%p",
-};
+char * type_get_printf_formatter(type_t type) {
+	DO_FOR_EACH_TYPE(type, \
+		return "\0", \
+		return "%"PRIu64, \
+		return "%"PRIu64, \
+		return "%"PRIu64, \
+		return "%"PRIu64, \
+		return "%"PRIi64, \
+		return "%"PRIi64, \
+		return "%"PRIi64, \
+		return "%"PRIi64, \
+		return "%p" \
+	);
 
-char * type_names[10] = {
-	"void",
-	"u8",
-	"u16",
-	"u32",
-	"u64",
-	"i8",
-	"i16",
-	"i32",
-	"i64",
-	"ptr",
-};
+	return "\0";
+}
+
+char * type_get_name(type_t type) {
+	DO_FOR_EACH_TYPE(type, \
+		return "void", \
+		return "u8", \
+		return "u16", \
+		return "u32", \
+		return "u64", \
+		return "i8", \
+		return "i16", \
+		return "i32", \
+		return "i64", \
+		return "ptr" \
+	);
+
+	return "unknown";
+}
 
 size_t type_sizeof(type_t type) {
 	switch (type) {
