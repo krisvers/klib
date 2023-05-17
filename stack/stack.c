@@ -8,7 +8,8 @@
 stack_t * stack_new(type_t type, size_t max) {
 	stack_t * stack = malloc(sizeof(stack_t));
 	if (stack == NULL) {
-		return NULL;
+		fprintf(stderr, "error: malloc(sizeof(stack_t)) failed\n");
+		abort();
 	}
 
 	stack->max = max;
@@ -35,9 +36,8 @@ stack_t * stack_new(type_t type, size_t max) {
 
 void stack_push(stack_t * stack, value_t value) {
 	if (stack->max != 0 && stack->size >= stack->max) {
-		printf("warning: stack (%s): %p is already full!\n", type_get_name(stack->type), (void *) stack);
-
-		return;
+		fprintf(stderr, "error: stack overflow (%s): %p\n", type_get_name(stack->type), (void *) stack);
+		abort();
 	}
 
 	if (stack->max == 0) {
@@ -68,6 +68,11 @@ void stack_push(stack_t * stack, value_t value) {
 		((ptr_t *) stack->array)[stack->size] = (ptr_t) (uintptr_t) value \
 	);
 
+	if (stack->size == SIZE_MAX) {
+		fprintf(stderr, "error: stack overflow (%s): %p\n", type_get_name(stack->type), (void *) stack);
+		abort();
+	}
+
 	++stack->size;
 
 	return;
@@ -77,9 +82,8 @@ value_t stack_pop(stack_t * stack) {
 	value_t value;
 	
 	if (stack->size == 0) {
-		printf("warning: stack (%s): %p is already empty!\n", type_get_name(stack->type), (void *) stack);
-
-		return -1;
+		fprintf(stderr, "error: stack underflow (%s): %p\n", type_get_name(stack->type), (void *) stack);
+		abort();
 	}
 
 	--stack->size;
