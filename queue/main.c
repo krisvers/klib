@@ -31,6 +31,6 @@ int main(void) {
 		queue_print(queue);
 	}
 
-	free(queue);
+	queue_free(queue);
 	return 0;
 }

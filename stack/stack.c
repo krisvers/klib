@@ -34,6 +34,19 @@ stack_t * stack_new(type_t type, size_t max) {
 	return stack;
 }
 
+void stack_free(stack_t * stack) {
+	if (stack == NULL) {
+		fprintf(stderr, "error: cannot free NULL stack\n");
+		abort();
+	}
+
+	if (stack->max == 0) {
+		free(stack->array);
+	}
+
+	free((void *) stack);
+}
+
 void stack_push(stack_t * stack, value_t value) {
 	if (stack->max != 0 && stack->size >= stack->max) {
 		fprintf(stderr, "error: stack overflow (%s): %p\n", type_get_name(stack->type), (void *) stack);

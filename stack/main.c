@@ -5,7 +5,7 @@
 #include <stack.h>
 
 int main(void) {
-	stack_t * stack = stack_new(TYPE_PTR, 20);
+	stack_t * stack = stack_new(TYPE_U16, 0);
 	if (stack == NULL) {
 		printf("malloc error\n");
 		return -1;
@@ -29,6 +29,6 @@ int main(void) {
 		stack_print(stack);
 	}
 
-	free(stack);
+	stack_free(stack);
 	return 0;
 }

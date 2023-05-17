@@ -13,6 +13,7 @@ typedef struct {
 } stack_t;
 
 stack_t * stack_new(type_t type, size_t size);
+void stack_free(stack_t * stack);
 void stack_push(stack_t * stack, value_t value);
 value_t stack_pop(stack_t * stack);
 value_t stack_peek(stack_t * stack);

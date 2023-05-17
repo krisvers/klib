@@ -35,6 +35,19 @@ queue_t * queue_new(type_t type, size_t max) {
 	return queue;
 }
 
+void queue_free(queue_t * queue) {
+	if (queue == NULL) {
+		fprintf(stderr, "error: cannot free NULL queue\n");
+		abort();
+	}
+
+	if (queue->max == 0) {
+		free(queue->array);
+	}
+
+	free((void *) queue);
+}
+
 void queue_push(queue_t * queue, value_t value) {
 	if (queue->max != 0 && queue->size >= queue->max) {
 		fprintf(stderr, "error: queue overflow (%s): %p\n", type_get_name(queue->type), (void *) queue);
