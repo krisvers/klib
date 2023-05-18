@@ -13,6 +13,7 @@ typedef struct {
 } queue_t;
 
 queue_t * queue_new(type_t type, size_t size);
+void queue_free(queue_t * queue);
 void queue_push(queue_t * queue, value_t value);
 value_t queue_pop(queue_t * queue);
 value_t queue_peek(queue_t * queue);

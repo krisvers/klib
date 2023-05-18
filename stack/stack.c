@@ -5,6 +5,12 @@
 #include <type.h>
 #include <stack.h>
 
+/*
+	stack_t * stack_new(type_t type, size_t max);
+
+NOTE:
+	Returns a pointer malloced container. Requires a type (type_t enum), size. How to free: end-programmer needs to call stack_free(stack).
+*/
 stack_t * stack_new(type_t type, size_t max) {
 	stack_t * stack = malloc(sizeof(stack_t));
 	if (stack == NULL) {
@@ -34,6 +40,12 @@ stack_t * stack_new(type_t type, size_t max) {
 	return stack;
 }
 
+/*
+	void stack_free(stack_t * stack);
+
+NOTE:
+	Takes a stack_t pointer, frees the array, and frees the stack pointer.
+*/
 void stack_free(stack_t * stack) {
 	if (stack == NULL) {
 		fprintf(stderr, "error: cannot free NULL stack\n");
@@ -47,6 +59,12 @@ void stack_free(stack_t * stack) {
 	free((void *) stack);
 }
 
+/*
+	void stack_push(stack_t * stack, value_t);
+
+NOTE:
+	Takes a stack_t pointer and generic value, if the array is dynamic, it reallocates to bigger size and pushes the value.
+*/
 void stack_push(stack_t * stack, value_t value) {
 	if (stack->max != 0 && stack->size >= stack->max) {
 		fprintf(stderr, "error: stack overflow (%s): %p\n", type_get_name(stack->type), (void *) stack);
@@ -91,6 +109,12 @@ void stack_push(stack_t * stack, value_t value) {
 	return;
 }
 
+/*
+	void stack_pop(stack_t * stack);
+
+NOTE:
+	Takes a stack_t pointer. Saves and frees the top element. If the array is dynamic, realloc to smaller array.
+*/
 value_t stack_pop(stack_t * stack) {
 	value_t value;
 	
@@ -132,6 +156,12 @@ value_t stack_pop(stack_t * stack) {
 	return value;
 }
 
+/*
+	void stack_peek(stack_t * stack);
+
+NOTE:
+	Takes a stack_t pointer and returns the top element without popping.
+*/
 value_t stack_peek(stack_t * stack) {
 	value_t value;
 
@@ -156,6 +186,12 @@ value_t stack_peek(stack_t * stack) {
 	return value;
 }
 
+/*
+	void stack_clear(stack_t * stack);
+
+NOTE:
+	Takes a stack_t pointer. If the array is dynamic, then it will realloc to size 0, otherwise it will just zero out each element.
+*/
 void stack_clear(stack_t * stack) {
 	if (stack->max == 0) {
 		stack->array = realloc(stack->array, 0);
@@ -180,6 +216,12 @@ void stack_clear(stack_t * stack) {
 	}
 }
 
+/*
+	void stack_print(stack_t * stack);
+
+NOTE:
+	Takes a stack_t pointer. Loops over each item using a pointer, incrementing by the size of the type. Then prints with the stack type, pointer and fancy [  ].
+*/
 void stack_print(stack_t * stack) {
 	value_t i = 0;
 	ptr_t ptr = stack->array;

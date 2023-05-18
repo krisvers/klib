@@ -16,4 +16,12 @@ typedef struct {
 	type_t type;
 } linkedlist_t;
 
+linkedlist_t * linkedlist_new(type_t type);
+value_t linkedlist_at(linkedlist_t * list, size_t index);
+void linkedlist_insert(linkedlist_t * list, size_t index, value_t value);
+void linkedlist_remove(linkedlist_t * list, size_t index);
+void linkedlist_clear(linkedlist_t * list);
+void linkedlist_print(linkedlist_t * list);
+void linkedlist_free(linkedlist_t * list);
+
 #endif
